@@ -1,6 +1,6 @@
 ---
 title: "Join Lab"
-author: "Dr. Shoemaker"
+author: "Fatima Tanvir"
 date: "DATA 2401"
 output: html_document
 ---
@@ -24,13 +24,18 @@ my_flights <- na.omit(my_flights) ## this dataset has data on cancelled flights 
 Create a dataframe of the average arrival delays for each _destination_
 
 ```{r}
-
+average_arrival_delays <- my_flights %>%
+  group_by(dest) %>%
+  summarise(average_arrival_delay = mean(arr_delay))
+average_arrival_delays
 ```
 
 Then use `left_join()` to join on the "airports" dataframe, which has the airport information.
 
 ```{r}
-
+average_arrival_delays_with_info <- average_arrival_delays %>%
+  left_join(airports, by = c("dest" = "faa"))
+average_arrival_delays_with_info
 ```
 
 
@@ -39,42 +44,52 @@ Note here: the column names don't match anymore!
 Which airport had the largest average arrival delay?
 
 ```{r}
+airport_with_max_arr_delay <- average_arrival_delays_with_info %>%
+  arrange(desc(average_arrival_delay)) %>%
+  slice_head(n = 1)
+
+airport_with_max_arr_delay
 
 ```
 
-
-
-What is the average departure delay for each airline? To answer this with something more than just the FAA code of the airline name, you need to create a dataframe of the average departure delay for each _airline_, then use `left_join()` to join on the "airlines" dataframe
+What is the average departure delay for each airline? To answer this with something more than just the FAA code of the airline name, you need to create a dataframe of the average departure delay for each _airline_, then use `left_join()` to join on the "airlines" dataframe.
 
 
 ```{r}
+average_departure_delays <- my_flights %>%
+  group_by(carrier) %>%
+  summarise(average_departure_delay = mean(dep_delay))
 
 
-````
+average_departure_delays_with_name <- average_departure_delays %>%
+  left_join(airlines, by = "carrier")
+
+average_departure_delays_with_name
+```
 
 Which airline had the smallest average departure delay? 
 
-
-
 ```{r}
+airline_with_min_dep_delay <- average_departure_delays_with_name %>%
+  arrange(average_departure_delay) %>%
+  slice_head(n = 1)
+airline_with_min_dep_delay
 
 
+hi <- anti_join(flights, airports, by = c("dest" = "faa"))
+hi
 
+bye <- anti_join(airports, flights, by = c("faa" = "dest"))
+bye
 ```
-
-
-
-
 
 Examples from R4DS:    
 
 ```{r}
-
 top_dest <- flights %>%
   count(dest, sort = TRUE) %>%
   head(10)
 top_dest
-
 ```
 
 Now you want to find each flight that went to one of those destinations. You could, of course, filter. But! Now you can semi-join: 
